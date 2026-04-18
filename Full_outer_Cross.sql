@@ -5,14 +5,14 @@ SELECT c.*,
 	   o.*
 FROM customers AS c 
 FULL OUTER JOIN orders AS o 
-ON c.customer_id = o.order_id;
+ON c.customer_id = o.customer_id;
 
 --Q2. Find all unmatched records — customers with no orders AND orders with no customer — in a single query.
 SELECT c.*,
 	   o.*
 FROM customers AS c 
 FULL OUTER JOIN orders AS o 
-ON c.customer_id = o.order_id
+ON c.customer_id = o.customer_id
 WHERE c.customer_id IS NULL OR 
 	   order_id IS NULL;
 
@@ -30,7 +30,7 @@ ON p.product_id =  o.product_id;
 --Q4. Using FULL OUTER JOIN, show total revenue per customer. Customers with no orders show 0, orphan orders show NULL for customer name.
 
 SELECT c.customer_name,
-	   COALESCE(SUM(p.price),0) AS total_revenue
+	   COALESCE(SUM(p.price*o.quantity),0) AS total_revenue
 FROM customers AS c 
 FULL OUTER JOIN orders AS o
 ON c.customer_id = o.customer_id
@@ -100,10 +100,13 @@ WHERE a.holder_id IS NULL OR t.holder_id IS NULL;
 
 SELECT EXTRACT(MONTH FROM o.order_date) AS Month,
 		COUNT(O.*) AS unmatched_count
-FROM orders AS o
-FULL OUTER JOIN customers AS c 
-ON o.customer_id = c.customer_id
-GROUP BY Month;
+FROM  customers AS c
+FULL OUTER JOIN  orders AS o
+ON c.customer_id = o.customer_id
+WHERE c.customer_id IS NULL OR o.order_id IS NULL
+GROUP BY Month
+ORDER BY unmatched_count DESC
+LIMIT 1;
 
 
 
@@ -139,11 +142,10 @@ GROUP BY c.customer_name;
 --Q17. Generate every possible student-course combination using CROSS JOIN. Show student name and course name. How many rows total?
 
 SELECT s.student_name,
-	   c.course_name,
-	   count(c.*) AS total
+	   c.course_name
+	   --count(c.*) AS total
 FROM students AS s 
-CROSS JOIN courses AS c
-GROUP BY s.student_name,c.course_name;
+CROSS JOIN courses AS c;
 
 
 
@@ -156,7 +158,8 @@ SELECT s.student_name,
 FROM students AS s 
 CROSS JOIN courses AS c 
 LEFT JOIN enrollments AS e 
-ON c.course_id =  e.course_id 
-WHERE e.course_id IS NULL;
+ON s.student_id = e.student_id
+AND c.course_id =  e.course_id 
+WHERE e.enrollment_id IS NULL;
 
 
