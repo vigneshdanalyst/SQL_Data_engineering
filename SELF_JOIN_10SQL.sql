@@ -89,11 +89,11 @@ ORDER BY Average_salary DESC;
 --Q9. Find managers whose entire team (all direct reports) earns below ₹85,000. Show manager name and department.
 
 SELECT m.employee_name,
-	   e.department
+	   m.department
 FROM employees AS e 
 JOIN employees AS m
-ON e.manager_id = m.manager_id
-GROUP BY m.employee_name,e.department
-HAVING SUM(e.salary) < 850000;
+ON e.manager_id = m.employee_id
+GROUP BY m.employee_name,m.department
+HAVING MAX(e.salary) < 85000;
 
 
