@@ -202,27 +202,114 @@ WHERE specialization = d.specialization)
 -- Q14. Find the specialization with the highest average fee per appointment.
 
 
-SELECT d.specialization, AVG(a.fee)
+SELECT d.specialization, AVG(a.fee) AS avg_fee
 FROM doctors AS d
-JOIN appointments AS a
-ON d.doctor_id = a.doctor_id
-GROUP BY d.specialization
+JOIN appointments AS a ON d.doctor_id = a.doctor_id
+GROUP BY d.specialization 
+HAVING AVG(a.fee) = (
+    SELECT MAX(avg_fee) 
+    FROM (
+        SELECT AVG(a2.fee) AS avg_fee
+        FROM doctors AS d2
+        JOIN appointments AS a2 ON d2.doctor_id = a2.doctor_id
+        GROUP BY d2.specialization
+    ) AS specialization_averages
+);
 
 -- Q15. Show doctors who have seen more patients than the average number of patients per doctor.
 
+SELECT 
+    d.doctor_name
+FROM doctors d
+JOIN appointments a
+ON d.doctor_id = a.doctor_id
+GROUP BY 
+    d.doctor_name,
+    d.doctor_id
+HAVING 
+    COUNT(a.appointment_id) > (SELECT AVG(patient_count)
+FROM (
+SELECT doctor_id,
+COUNT(appointment_id) AS patient_count
+FROM appointments 
+GROUP BY doctor_id
+ORDER BY patient_count) AS avg_table);
+
+
 -- Q16. Find appointments where the fee is above the overall average appointment fee.
 
+
+SELECT appointment_id 
+FROM appointments 
+WHERE fee >(
+SELECT AVG(fee)
+FROM appointments AS a )
 
 
 -- 🎓 Education (5 questions)
 
 -- Q17. Find students whose average score is above the overall average score across all enrollments.
 
+
+SELECT s.student_id,s.student_name,
+	AVG(e.score)
+FROM students AS s 
+JOIN enrollments AS e 
+ON s.student_id = e.student_id
+GROUP BY s.student_id,
+s.student_name
+HAVING AVG(e.score) > (
+SELECT AVG(score)
+FROM enrollments);
+
 -- Q18. Show courses where the average score is above the overall course average. (FROM subquery)
+
+SELECT course_name,AVG(e.score)
+FROM enrollments AS e 
+JOIN courses AS c 
+ON e.course_id = c.course_id
+GROUP BY course_name
+HAVING AVG(e.score) > (
+SELECT AVG(score)
+FROM enrollments );
+
 
 -- Q19. Find the student with the highest single score across all enrollments.
 
+
+SELECT s.student_name,
+	     MAX(e.score) AS Max_score
+FROM students AS s 
+JOIN enrollments AS e
+ON s.student_id = e.student_id
+GROUP BY s.student_name
+ORDER BY Max_score DESC
+LIMIT 1;
+
+
 -- Q20. Show students who scored above the average score in every course they're enrolled in. (Correlated)
+
+
+SELECT 
+    s.student_name
+FROM students s
+WHERE NOT EXISTS (
+    
+    SELECT 1
+    FROM enrollments e
+    
+    WHERE e.student_id = s.student_id
+    
+    AND e.score <= (
+        
+        SELECT AVG(score)
+        FROM enrollments
+        
+        WHERE course_id = e.course_id
+    )
+);
+
+
 
 -- Q21. Find courses where no student scored below 70.
 
