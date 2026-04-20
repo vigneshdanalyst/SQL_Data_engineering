@@ -313,18 +313,135 @@ WHERE NOT EXISTS (
 
 -- Q21. Find courses where no student scored below 70.
 
+SELECT 
+    c.course_name
+FROM courses c
+WHERE NOT EXISTS (
+    
+    SELECT 1
+    FROM enrollments e
+    
+    WHERE e.course_id = c.course_id
+    AND e.score < 70
+); 
+
 
 
 -- 🏦 Banking (4 questions)
 
 -- Q22. Find account holders whose total transaction amount is above the average total per holder.
 
+-- Select holder details
+SELECT 
+    ah.holder_id,
+    ah.holder_name,
+    SUM(t.amount) AS total_amount
+
+-- From account holders
+FROM account_holders ah
+
+-- Join transactions
+JOIN transactions t
+ON ah.holder_id = t.holder_id
+
+-- Group per holder
+GROUP BY 
+    ah.holder_id,
+    ah.holder_name
+
+-- Compare with average total
+HAVING 
+    SUM(t.amount) > (
+
+        -- Average total per holder
+        SELECT 
+            AVG(holder_total)
+        FROM (
+
+            -- Total per holder
+            SELECT 
+                holder_id,
+                SUM(amount) AS holder_total
+            FROM transactions
+            GROUP BY holder_id
+
+        ) AS avg_table
+    );
+
 -- Q23. Show transactions where the amount is above the average transaction amount for that holder's city. (Correlated)
+
+-- Select transaction details
+SELECT 
+    t.transaction_id,
+    t.amount,
+    ah.city
+
+-- From transactions
+FROM transactions t
+
+-- Join holder table
+JOIN account_holders ah
+ON t.holder_id = ah.holder_id
+
+-- Compare with city average
+WHERE 
+    t.amount > (
+
+        -- City average
+        SELECT 
+            AVG(t2.amount)
+        FROM transactions t2
+        
+        JOIN account_holders ah2
+        ON t2.holder_id = ah2.holder_id
+        
+        WHERE 
+            ah2.city = ah.city
+    );
 
 -- Q24. Find the account holder with the highest single transaction.
 
--- Q25. Show account holders who have only Credit transactions and no Debit transactions. (NOT IN subquery)
+-- Select holder details
+SELECT 
+    ah.holder_id,
+    ah.holder_name,
+    t.amount
 
+-- From holders
+FROM account_holders ah
+
+-- Join transactions
+JOIN transactions t
+ON ah.holder_id = t.holder_id
+
+-- Find highest transaction
+WHERE 
+    t.amount = (
+
+        -- Maximum amount
+        SELECT MAX(amount)
+        FROM transactions
+    );
+
+-- Q25. Show account holders who have only Credit transactions and no Debit transactions. (NOT IN subquery)
+-- Select holder details
+SELECT 
+    holder_id,
+    holder_name
+
+-- From holders
+FROM account_holders
+
+-- Exclude debit holders
+WHERE holder_id NOT IN (
+
+    -- Find debit holders
+    SELECT 
+        holder_id
+    FROM transactions
+    WHERE 
+        txn_type = 'Debit'
+);
 
 
 
