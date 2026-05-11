@@ -1,0 +1,40 @@
+SELECT DISTINCT category FROM orders_1;
+
+
+SELECT
+	CUSTOMER_NAME,
+	SUM(PRICE * QUANTITY) AS TOTAL_COST
+FROM
+	ORDERS_1
+WHERE
+	CATEGORY = 'Electronics'
+GROUP BY
+	CUSTOMER_NAME
+HAVING
+	SUM(PRICE * QUANTITY) > 1000
+ORDER BY
+	TOTAL_COST
+
+
+SELECT *
+FROM orders_1
+WHERE CUSTOMER_NAME LIKE 'A%'
+   OR CUSTOMER_NAME LIKE 'B%';
+
+
+SELECT * FROM 
+orders_1
+WHERE order_date BETWEEN '2023-02-01' AND '2023-02-28'
+ORDER BY order_date DESC;
+
+
+
+SELECT order_id,
+price,
+(CASE WHEN price>500 THEN 'premium'
+WHEN price BETWEEN 100 AND 500 THEN 'Mid-Range'
+ELSE 'Budget'
+END ) AS price_category
+FROM orders_1
+
+
