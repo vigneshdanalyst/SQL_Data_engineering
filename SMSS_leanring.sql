@@ -119,7 +119,8 @@ sales,
 MAX(sales) OVER() maxsales,
 MIN(sales) OVER() minsales,
 MAX(sales) OVER(PARTITION BY productID) maxproductsales,
-MIN(sales) OVER(PARTITION BY productID) minproductsales
+MIN(sales) OVER(PARTITION BY productID) minproductsales,
+sales - MIN(sales) OVER() devation 
 FROM orders ;
 
 
@@ -132,6 +133,46 @@ SELECT * FROM (
 WHERE salary = HIGHESTSALARY;
 
 
+
+--RUNNING AND ROLLING TOTAL 
+
+--RUNNING TOTAL 
+
+
+--MOVING AVERAGE
+
+SELECT 
+	OrderID,
+	productID,
+	orderDate,
+	sales
+	--AVG(sales) OVER (PARTITION BY month) AS movingaverage
+FROM orders;
+
+
+SELECT 
+	OrderID,
+	productID,
+	orderDate,
+	sales,
+	AVG(sales) OVER (PARTITION BY productID) AS movingaverage,
+	AVG(sales) OVER (PARTITION BY productID ORDER BY orderDate) AS movingaverage
+FROM orders;
+	
+
+
+-- Calcuate the moving average of sales for each product over time, including only the next door 
+
+
+SELECT 
+	OrderID,
+	productID,
+	orderDate,
+	sales,
+	AVG(sales) OVER (PARTITION BY productID) AS movingaverage,
+	AVG(sales) OVER (PARTITION BY productID ORDER BY orderDate) AS movingaverage,
+	AVG(sales) OVER (PARTITION BY productID ORDER BY orderDate ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) AS rollingaverage
+FROM orders;
 
 
 
