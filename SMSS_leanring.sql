@@ -176,3 +176,60 @@ FROM orders;
 
 
 
+-- RANK(), DENSE_RANK(), ROW_NUMBER(), NTILE().
+
+USE LEARN;
+--ROW_NUMBER()
+
+SELECT 
+	orderID,
+	productID,
+	sales,
+	ROW_NUMBER() OVER(ORDER BY SALES DESC) salesrow,
+	RANK()		 OVER(ORDER BY sales DESC) salesrank,
+	DENSE_RANK() OVER(ORDER BY sales DESC) saledense
+FROM orders;
+
+USE learn;
+--TOP N analysis 
+
+SELECT * FROM (
+SELECT 
+	productID,
+	sales,
+	Row_number() OVER(PARTITION BY productID ORDER BY sales DESC) maxsales
+FROM orders ) as t 
+WHERE maxsales = 1;
+
+
+--BOTTOM N Analysis 
+
+SELECT * FROM (
+
+SELECT 
+	productID,
+	SUM(sales) Totalsales,
+	Row_number() OVER (ORDER BY SUM(sales)) maxsales
+FROM orders
+GROUP BY productID ) As t 
+WHERE maxsales <= 2
+
+
+-- Generate UNIQUE ID`s 
+
+--Help to assign unique identifier for each row to help paginating 
+
+SELECT 
+ROW_NUMBER() OVER (ORDER BY orderID, orderID) UniqueID,
+* 
+FROM orders ;
+
+--Paginating 
+
+--The Process of breaking down a large data into smaller, more manageble chunks
+
+--IDENTIFY DUPLICATES
+
+--IDENTIFY and Remove duplicates 
+
+
