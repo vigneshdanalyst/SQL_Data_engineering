@@ -338,5 +338,14 @@ GROUP BY customerID
 
 
 
+--First_Value()
 
+--Access a value from the first row within a window 
 
+SELECT 
+	orderID,
+	productID,
+	sales,
+	FIRST_VALUE(sales) OVER (PARTITION BY productID ORDER BY sales) Lowestsales,
+	LAST_VALUE(sales) OVER (PARTITION BY productID ORDER BY sales ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) Highestsales
+FROM orders;
