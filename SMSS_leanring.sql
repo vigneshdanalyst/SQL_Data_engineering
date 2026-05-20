@@ -287,8 +287,56 @@ SELECT
 	orderID,
 	productID,
 	sales,
-	LEAD(sales) OVER ( PARTITION BY ProductID ORDER BY orderDate) as updown,
-	LAG(sales) OVER(PARTITION BY ProductID ORDER BY orderDate) as downup,
-	ROW_NUMBER() OVER(PARTITION BY productID ORDER BY sales) as rowsnumber
+	LEAD(sales) OVER ( PARTITION BY ProductID ORDER BY SALES) as updown,
+	LAG(sales) OVER(PARTITION BY ProductID ORDER BY SALES ) as downup,
+	ROW_NUMBER() OVER(PARTITION BY productID ORDER BY sales) as rowsnumber,
+	FIRST_VALUE(sales) OVER(PARTITION BY productID ORDER BY sales) as firstvalue,
+	LAST_VALUE(SALES) OVER(ORDER BY sales) AS lastvalue
 FROM 
 	orders;
+
+
+-- Month-Over-Month Analysis
+
+--Analyze the MoM perfomance by finding the percentage change in sales between the current and previous Month.
+
+--Time series Analysis 
+	-- Year over year analysis 
+	--Month over month analysis 
+
+SELECT *,CurrentMonthsales-Previousmonthsales as salesperformace,
+ROUND(CAST((CurrentMonthsales-Previousmonthsales) AS float)/Previousmonthsales*100,1) AS MoM_percentage
+
+FROM (
+
+SELECT 
+	MONTH(orderdate) OrderMonth,
+	SUM(sales) CurrentMonthsales,
+	LAG(SUM(sales)) OVER(ORDER BY MONTH(orderdate)) Previousmonthsales
+FROM orders
+GROUP BY MONTH(orderdate)) t 
+
+
+--Customer Retention Analysis 
+
+-- Analyze customer Loyalty by Ranking customers Based on the average number of days between orders 
+
+SELECT 
+	CustomerID,
+	AVG( daysuntilnext) Avgdays,
+	RANK() OVER (ORDER BY COALESCE(AVG( daysuntilnext),0000)) RankAvg
+FROM
+(
+SELECT
+	orderID,
+	CustomerID,
+	OrderDate Currentorder,
+	LEAD(orderdate) OVER(partition BY CustomerID ORDER BY orderDate) as nextorder,
+	DATEDIFF(Day,OrderDate,LEAD(orderdate) OVER(partition BY CustomerID ORDER BY orderDate)) daysuntilnext
+FROM orders) t 
+GROUP BY customerID
+
+
+
+
+
