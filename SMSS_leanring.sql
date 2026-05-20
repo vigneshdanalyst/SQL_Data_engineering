@@ -232,4 +232,63 @@ FROM orders ;
 
 --IDENTIFY and Remove duplicates 
 
+SELECT 
+ROW_NUMBER() OVER(PARTITION BY ORDERID ORDER BY CREATIONTIME Desc) rn,
+*	
+FROM orders;
 
+
+--NTILE()
+
+--Segment all orders into 3 categories : High, Medium and Low sales.
+
+SELECT *,
+CASE WHEN Buckets=1 THEN 'High'
+	WHEN Buckets=2 THEN 'Meidum'
+	WHEN Buckets=3 THEN 'Low'
+	END saleseg
+	FROM(
+SELECT
+	orderID,
+	sales,
+	NTILE(3) OVER(ORDER BY sales DESC) Buckets
+FROM orders) t
+
+
+--Loading the balance in ETL.
+
+-- In order to export the data, divide the orders into groups 
+
+SELECT 
+	*,
+	NTILE(2) OVER(ORDER BY SALES DESC) Buckets
+FROM orders;
+
+
+--Percentage based Ranking.
+
+--CUME_DIST()
+
+--PERCENT_RANK()
+
+SELECT 
+	orderID,
+	CUME_DIST() OVER(ORDER BY sales DESC),
+	PERCENT_RANK() OVER(ORDER BY sales DESC)
+FROM orders;
+
+--LEAD(), LAG(), FIRST_VALUE(), LAST_VALUE()
+
+--LEAD()
+
+USE LEARN;
+
+SELECT 
+	orderID,
+	productID,
+	sales,
+	LEAD(sales) OVER ( PARTITION BY ProductID ORDER BY orderDate) as updown,
+	LAG(sales) OVER(PARTITION BY ProductID ORDER BY orderDate) as downup,
+	ROW_NUMBER() OVER(PARTITION BY productID ORDER BY sales) as rowsnumber
+FROM 
+	orders;
