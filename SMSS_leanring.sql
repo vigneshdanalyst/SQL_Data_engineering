@@ -349,3 +349,83 @@ SELECT
 	FIRST_VALUE(sales) OVER (PARTITION BY productID ORDER BY sales) Lowestsales,
 	LAST_VALUE(sales) OVER (PARTITION BY productID ORDER BY sales ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) Highestsales
 FROM orders;
+
+
+--Subquery 
+
+--Types of subquery 
+
+--Dependancy 
+/* 1. Non correaleated subquery
+2.Correleated subquery */
+
+/* Result type
+1. Sclaer 
+2. Table 
+3. Row 
+
+*/
+
+--1. Find the products that have a price higher than the avaerage price of all products 
+
+
+SELECT * 
+FROM (
+SELECT 
+	productID,
+	price,
+	AVG(price) OVER() Avgprice 
+FROM products) as T
+WHERE price > Avgprice;
+
+--Rabk customers based on their total amount of sales 
+
+--i) find the total of sales for each customer 
+
+SELECT 
+	*,
+	RANK() OVER(ORDER BY totalsales DESC) customerrank
+FROM (
+SELECT 
+	CUSTOMERID,
+	SUM(sales) totalsales
+FROM orders
+GROUP BY customerID) as T
+
+
+--Subquery in SELECT clause 
+
+--Must be scaler query 
+
+--Show the productID, Productname, prices and the total number of orders 
+
+SELECT 
+	productID,
+	product,
+	price,
+	(SELECT COUNT(*) FROM orders) Totalorders
+FROM products;
+
+
+--Join Clause Subquery 
+
+--  Subquery in Join clauses 
+
+--Show all customers details and find the total order of each customer 
+
+
+--show all customer details 
+
+SELECT c.* ,
+o.Totalorders
+FROM customers c 
+LEFT JOIN (
+SELECT 
+	customerID,
+	COUNT(*) Totalorders
+FROM orders
+GROUP BY customerID) o
+ON c.customerID = o.CustomerID
+
+-- Find the products that have a price higher than the average price of all products 
+
