@@ -447,3 +447,39 @@ SELECT
 FROM orders
 WHERE customerID NOT IN (SELECT customerID FROM customers WHERE country = 'Germany')
 
+
+-- Any operators 
+
+--Find female employee whose salaries are greater than the salaries of any male employees 
+
+
+SELECT 
+	employeeID,
+	firstname,
+	gender,
+	salary
+FROM employees
+WHERE gender ='F'
+AND salary > ANY 
+
+(SELECT 
+	salary
+FROM employees
+WHERE gender ='M')
+
+
+--ALL Opertors 
+
+SELECT 
+	employeeID,
+	firstname,
+	gender,
+	salary
+FROM employees
+WHERE gender ='F'
+AND salary > ALL
+
+(SELECT 
+	salary
+FROM employees
+WHERE gender ='M')
