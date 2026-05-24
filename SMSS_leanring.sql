@@ -429,3 +429,21 @@ ON c.customerID = o.CustomerID
 
 -- Find the products that have a price higher than the average price of all products 
 
+
+SELECT * FROM products 
+WHERE price > (SELECT AVG(price) as average_price
+FROM products)
+
+--Show the details of orders made by customers in germany 
+
+SELECT 
+	* 
+FROM orders
+WHERE customerID IN (SELECT customerID FROM customers WHERE country = 'Germany');
+
+--Show the details of orders made by customers not in germany 
+SELECT 
+	* 
+FROM orders
+WHERE customerID NOT IN (SELECT customerID FROM customers WHERE country = 'Germany')
+
