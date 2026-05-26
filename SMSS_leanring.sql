@@ -571,8 +571,27 @@ OPTION (MAXRECURSION 10)
 
 
 
+	--WITH employ AS 
+	--(
+	----Anchor query 
 
-
+	--SELECT 
+	--employeeID,
+	--firstname,
+	--lastname,
+	--1 AS level 
+	--FROM employees
+	--WHERE managerID IS NULL
+	--UNION ALL 
+	--SELECT 
+	--e.employeeID,
+	--e.firstname,
+	--e.ManagerID
+	--2 AS level
+	--FROM employees AS e 
+	--WHERE e.managerid=1
+	--)
+	----Main query 
 
 
 
