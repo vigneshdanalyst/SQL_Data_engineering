@@ -47,7 +47,7 @@ ORDER BY price DESC;
 --Q3.** Find all orders placed in the year 2022 with order_status = 'Delivered'. How many such orders exist?
 
 SELECT 
-	*
+	COUNT(*) total_orders_count
 FROM ecom_orders
 WHERE order_status='Delivered' 
 AND order_date BETWEEN '2022-01-01' AND '2022-12-31';
@@ -104,12 +104,13 @@ SELECT
 	COUNT(*) totalorderstatus
 FROM ecom_orders
 GROUP BY order_status
+HAVING COUNT(*) > 1000
 ORDER BY totalorderstatus DESC;
 
 --Q10.** Find all distinct payment methods used for orders above ₹50,000.
 
 SELECT 
-	COUNT(DISTINCT(payment_method)) payment_methods
+	DISTINCT(payment_method)
 FROM ecom_orders
 WHERE total_amount > 50000;
 
@@ -164,8 +165,8 @@ WHERE  insurance_covered > total_bill;
 
 SELECT 
 	COUNT(DISTINCT patient_id) uniquepatients
-FROM health_patients
-WHERE YEAR(registered_on) = 2023;
+FROM health_admissions
+WHERE YEAR(admission_date) = 2023;
 
 SELECT * FROM health_patients;
 
@@ -176,6 +177,7 @@ SELECT
 	AVG(consultation_fee) average_fee
 FROM health_doctors
 GROUP BY specialty
+HAVING AVG(consultation_fee) > 1000
 ORDER BY AVG(consultation_fee) DESC;
 
 --18.** List all patients (from health_patients) who are above age 60 from 'Chennai'.
