@@ -483,3 +483,99 @@ AND salary > ALL
 	salary
 FROM employees
 WHERE gender ='M')
+
+
+
+
+--CTE (Common Table expression ) 
+
+--Standalone CTE 
+--Define and used indepentantly runs without realying on other CTE and query 
+
+USE learn;
+
+
+WITH totalsales AS (
+  SELECT 
+    CustomerID,
+    SUM(sales) AS Totalsales
+  FROM orders
+  GROUP BY CustomerID
+)
+--Step the last order date for each customer 
+,Last_orderdate AS 
+(
+	SELECT
+		customerID,
+		MAX(orderdate) Last_order
+	FROM orders 
+	GROUP BY customerID
+	)
+	--Rank the customer based on total sales per customer 
+	,Customer_rank AS 
+	(
+	SELECT 
+		customerID,
+		totalsales,
+		RANK() OVER(ORDER BY totalsales DESC) cutomerrank
+	FROM totalsales
+	)
+	--Segmenting the customer based on their total sales 
+	,customer_segmentation AS (
+	SELECT 
+		customerID,
+		CASE WHEN totalsales> 100 THEN 'High'
+		WHEN totalsales> 80 THEN 'Medium'
+		ELSE 'Low'
+	END customersegment
+	FROM totalsales )
+
+
+
+SELECT 
+	c.customerID,
+	c.firstname,
+	c.lastname,
+	cts.totalsales,
+	lt.last_order,
+	cr.cutomerrank,
+	cs.customersegment
+FROM customers c 
+LEFT JOIN totalsales cts
+ON cts.customerID=c.customerID
+LEFT JOIN last_orderdate lt
+ON lt.customerid = c.customerid 
+LEFT JOIN Customer_rank cr
+ON cr.customerID = c.customerID
+LEFT JOIN customer_segmentation cs
+ON cs.CustomerID=c.CustomerID
+ORDER BY cts.totalsales DESC;
+
+
+-- Generate sequence of numbers from 1 to 20 
+
+
+WITH series AS (
+--Anchor query 
+SELECT 1 AS mynumber 
+UNION ALL 
+--Recusrive query 
+SELECT 
+mynumber+1
+FROM series
+WHERE mynumber < 10
+)
+
+SELECT * FROM series
+OPTION (MAXRECURSION 10)
+
+
+
+
+
+
+
+
+	
+
+
