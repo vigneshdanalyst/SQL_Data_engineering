@@ -152,7 +152,7 @@ SELECT
 	SUM(total_bill) Totalbilling
 FROM health_admissions
 GROUP BY ward
-ORDER BY totalbilling;
+ORDER BY totalbilling DESC;
 
 --Q15.** Find all admissions where insurance_covered > total_bill. (Investigate data anomalies!)
 
@@ -271,7 +271,7 @@ SELECT
 	AVG(loan_amount) average_amount
 FROM bank_loans
 GROUP BY loan_type
-ORDER BY average_amount;
+ORDER BY average_amount DESC;
 
 --Q28.** List all transactions made via 'UPI' channel in 2023. Count them.
 
