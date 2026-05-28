@@ -259,8 +259,352 @@ INTERSECT
 SELECT patient_id FROM health_patients
 
 
+--**Q21.** Join bank_accounts with bank_customers. Show customer name, account_type, balance for all active accounts.
+
+SELECT 
+	c.name,
+	a.account_type,
+	a.balance 
+FROM bank_customers c 
+JOIN bank_accounts a
+ON c.customer_id = a.customer_id
+WHERE is_active = 1
+
+
+--**Q22.** Join bank_transactions with bank_accounts. Show account_type, sum of transaction amounts for 'Credit' transactions.
+
+SELECT 
+	a.account_type,
+	SUM(t.amount) total_amount
+FROM bank_transactions t
+JOIN bank_accounts a 
+ON t.account_id = a.account_id 
+WHERE txn_type = 'credit'
+GROUP BY a.account_type;
+
+SELECT * FROM bank_transactions;
+
+
+--**Q23.** Join bank_loans with bank_customers. Show customer name, loan_type, loan_amount, status.
+
+SELECT 
+	c.name,
+	l.loan_type,
+	l.loan_amount,
+	l.status
+FROM bank_loans l
+JOIN bank_customers c 
+ON l.customer_id = c.customer_id 
+
+--**Q24.** LEFT JOIN bank_customers with bank_loans. Find customers who have NO loan.
+
+SELECT 
+	c.customer_id,
+	c.name
+FROM bank_customers c 
+LEFT JOIN bank_loans l
+ON c.customer_id = l.customer_id 
+WHERE l.customer_id IS NULL;
+
+--**Q25.** Join transactions with accounts with customers. Find the customer with the highest single transaction.
+
+SELECT TOP 1
+	c.customer_id,
+	MAX(t.amount) highest_transaction
+FROM bank_transactions t 
+JOIN bank_accounts a 
+ON t.account_id = a.account_id 
+JOIN bank_customers c 
+ON a.customer_id = c.customer_id 
+GROUP BY c.customer_id 
+ORDER BY highest_transaction DESC;
+
+--**Q26.** Find customers who have BOTH a savings account AND a loan. (Use JOIN or INTERSECT)
+
+SELECT customer_id FROM bank_loans 
+INTERSECT 
+SELECT customer_id FROM bank_accounts WHERE account_type = 'savings';
+
+
+--**Q27.** UNION ALL: Combine Credit and Debit transactions into one result with a label column. 
+--Show account_id, amount, txn_type, txn_date.
+
+SELECT 
+    account_id, 
+    CAST(amount AS VARCHAR(50)) AS col2, 
+    txn_type AS col3, 
+    CAST(txn_date AS VARCHAR(50)) AS col4 
+FROM bank_transactions 
+UNION ALL 
+SELECT 
+    account_id, 
+    CAST(account_type AS VARCHAR(50)), 
+    CAST(balance AS VARCHAR(50)), 
+    CAST(is_active AS VARCHAR(50)) 
+FROM bank_accounts
+
+SELECT * FROM bank_transactions;
+SELECT * FROM bank_accounts;
 	
 
+
+--**Q28.** EXCEPT: Find account_ids that appear in bank_accounts but NOT in bank_transactions (no transaction history).
+
+SELECT account_id FROM bank_accounts 
+EXCEPT 
+SELECT account_id FROM bank_transactions
+
+
+--**Q29.** SELF JOIN bank_loans: Find customers who have more than one loan. Show customer_id and count of loans.
+
+SELECT 
+	l.customer_id,
+	COUNT(*) count_of_loans
+FROM bank_loans l
+JOIN bank_loans l1 
+ON l.customer_id = l1.customer_id 
+GROUP BY l.customer_id
+HAVING COUNT(*) > 1;
+
+--**Q30.** Join accounts with customers. For each employment_type, find the average account balance.
+
+SELECT 
+	c.employment_type,
+	AVG(a.balance) account_balance_average
+FROM bank_customers c 
+JOIN bank_accounts a 
+ON c.customer_id = a.customer_id 
+GROUP BY c.employment_type;
+
+--**Q31.** Join hr_employees with hr_performance. Show employee first_name, department, review_year, rating, score.
+
+SELECT 
+	e.first_name,
+	e.department,
+	p.review_year,
+	p.rating,
+	p.score
+FROM hr_employees e
+JOIN hr_performance p 
+ON e.employee_id = p.employee_id;
+
+
+--**Q32.** Join hr_employees with hr_attendance. For each employee, count total 'Absent' days.
+
+SELECT * FROM hr_attendance ; 
+
+SELECT 
+	e.employee_id,
+	COUNT(a.status) total_absent_days 
+FROM hr_employees e 
+JOIN hr_attendance a
+ON e.employee_id = a.employee_id 
+WHERE a.status = 'absent'
+GROUP BY e.employee_id
+ORDER BY total_absent_days DESC;
+
+--**Q33.** SELF JOIN hr_employees: Show each employee alongside their manager's name. (employee.manager_id = manager.employee_id)
+
+SELECT 
+	e.employee_id,
+	e.first_name,
+	e1.first_name,
+	e1.manager_id,
+	e1.first_name
+FROM hr_employees e 
+JOIN hr_employees e1 
+ON e.manager_id = e1.manager_id
+
+--**Q34.** LEFT JOIN hr_employees with hr_performance. Find employees with NO performance review on record.
+
+SELECT 
+	e.employee_id 
+FROM hr_employees e 
+LEFT JOIN hr_performance p
+ON e.employee_id = p.employee_id 
+WHERE p.employee_id IS NULL;
+
+--**Q35.** Join employees + performance. Find top 5 employees by average performance score across all years.
+
+SELECT TOP 5
+	e.employee_id,
+	AVG(p.score) average_score_years
+FROM hr_employees e
+JOIN hr_performance p 
+ON e.employee_id = p.employee_id 
+GROUP BY e.employee_id 
+ORDER BY average_score_years DESC;
+
+
+SELECT * FROM hr_performance;
+
+
+--**Q36.** Join employees + attendance. Show all employees who were absent more than 20 times.
+
+SELECT 
+	e.employee_id,
+	COUNT(a.status) total_absent_days
+FROM hr_employees e 
+JOIN hr_attendance a 
+ON e.employee_id = a.employee_id 
+GROUP BY e.employee_id 
+HAVING COUNT(a.status) > 20;
+
+	SELECT * FROM hr_attendance ; 
+--**Q37.** Find departments where ALL employees have a manager (manager_id IS NOT NULL). (Tricky — think GROUP BY + HAVING COUNT)
+
+
+--**Q38.** UNION: Combine the list of employees who received 'Outstanding' rating with employees who got promoted. Show employee_id only, deduplicated.
+
+SELECT employee_id FROM hr_employees 
+UNION 
+SELECT employee_id FROM hr_performance WHERE rating ='outstanding' AND promotion=1;
+
+
+--**Q39.** Join performance with employees. Show average salary_hike_pct per department.
+
+SELECT * FROM hr_performance;
+SELECT * FROM hr_employees;
+
+SELECT	
+	e.department,
+	AVG(p.salary_hike_pct) as salary_hike
+FROM hr_employees e 
+JOIN hr_performance p 
+ON e.employee_id = p.employee_id 
+GROUP BY e.department
+
+--**Q40.** EXCEPT: Find employee_ids in hr_employees who do NOT appear in hr_performance (never reviewed).
+
+SELECT employee_id FROM hr_employees
+EXCEPT 
+SELECT employee_id FROM hr_performance
+
+--**Q41.** Join shipments with warehouses. Show warehouse city, carrier, count of shipments dispatched.
+
+SELECT 
+	w.city,
+	s.carrier,
+	COUNT(*) countofshipments
+FROM logistics_warehouses w 
+JOIN logistics_shipments s 
+ON w.warehouse_id = s.warehouse_id 
+GROUP BY w.city,
+	s.carrier
+ORDER BY countofshipments DESC;
+
+--**Q42.** Join logistics_inventory with logistics_warehouses. Show warehouse_name, product_id, quantity, reorder_level.
+
+SELECT COLUMN_NAME 
+FROM INFORMATION_SCHEMA.columns
+WHERE TABLE_NAME ='logistics_warehouses'
+ORDER BY ORDINAL_POSITION
+
+SELECT 
+	w.warehouse_name,
+	i.product_id,
+	i.quantity,
+	i.reorder_level
+FROM logistics_warehouses w
+JOIN logistics_inventory i
+ON w.warehouse_id = i.warehouse_id ;
+
+
+--**Q43.** Find warehouses that have NO inventory records. (LEFT ANTI JOIN warehouses vs inventory)
+
+SELECT 
+	w.warehouse_id,
+	i.inventory_id
+FROM logistics_warehouses w
+LEFT JOIN logistics_inventory i 
+ON w.warehouse_id = i.warehouse_id
+WHERE i.warehouse_id IS NULL;
+
+
+
+--**Q44.** Join shipments with ecom_orders (shared order_id). Show order_status, shipment status, freight_cost.
+
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'logistics_inventory'
+ORDER BY ORDINAL_POSITION;
+
+SELECT 
+	o.order_status,
+	s.status,
+	s.freight_cost
+FROM ecom_orders o
+JOIN logistics_shipments s 
+ON o.order_id = s.order_id ;
+
+
+
+--**Q45.** Join inventory with warehouses. Find warehouses with total inventory value (quantity * unit_cost) above ₹5 lakhs.
+
+SELECT 
+	w.warehouse_id,
+	SUM(i.quantity*i.unit_cost) Total_inventory_value 
+FROM logistics_warehouses w 
+JOIN logistics_inventory i 
+ON w.warehouse_id=i.warehouse_id
+GROUP BY w.warehouse_id
+ORDER BY Total_inventory_value DESC;
+
+--**Q46.** SELF JOIN logistics_shipments: Find order_ids that have more than one shipment (re-shipments / splits).
+
+SELECT
+	s.shipment_id
+FROM logistics_shipments s
+JOIN logistics_shipments s1
+ON s.shipment_id = s1.shipment_id
+GROUP BY s.shipment_id
+HAVING count(*) >1;
+
+
+--**Q47.** UNION ALL: Combine dispatched shipments from 2022 and 2023 into one dataset with a year label.
+
+SELECT shipment_id,YEAR(dispatch_date) YEAR FROM logistics_shipments WHERE YEAR(dispatch_date)=2022
+UNION ALL 
+SELECT shipment_id,YEAR(dispatch_date) YEAR FROM logistics_shipments WHERE YEAR(dispatch_date)=2023
+
+--**Q48.** Find suppliers (from logistics_suppliers) whose city is not present in logistics_warehouses cities. (EXCEPT or LEFT ANTI JOIN)
+
+SELECT city FROM logistics_suppliers 
+EXCEPT 
+SELECT city FROM logistics_warehouses
+
+
+--**Q49.** Join shipments with warehouses. For each carrier, find the warehouse city they most frequently dispatch from.
+
+SELECT 
+	s.carrier,
+	w.city,
+	count(city) as most_frequent_dispatch 
+FROM logistics_warehouses w
+JOIN logistics_shipments s
+ON w.warehouse_id = s.warehouse_id
+GROUP BY s.carrier,
+			w.city
+ORDER BY most_frequent_dispatch DESC;
+
+
+
+--**Q50.** Join inventory + warehouses + suppliers (use warehouse_id as bridge). Show supplier_id, warehouse city, total inventory quantity. (Note: add supplier_id to inventory in your head or use logistics_suppliers as a standalone reference domain.)
+
+
+SELECT 
+	s.supplier_id,
+	w.city,
+	SUM(i.quantity) 
+FROM logistics_inventory i 
+JOIN logistics_warehouses w
+ON i.warehouse_id = w.warehouse_id 
+JOIN logistics_suppliers s
+ON w.warehouse_id = s.warehouse_id;
+
+SELECT * FROM logistics_suppliers;
+SELECT * FROM logistics_inventory;
+SELECT * FROM logistics_warehouses;
 
 
 
